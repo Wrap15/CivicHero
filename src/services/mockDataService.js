@@ -265,6 +265,9 @@ export const saveIssue = (issue) => {
   const issues = getIssues();
   issues.unshift(issue); // Place newest first
   setLocalCollection(STORAGE_KEYS.ISSUES, issues);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('mock_issues_updated'));
+  }
   return issue;
 };
 
@@ -274,6 +277,9 @@ export const updateIssueInDB = (issueId, updatedFields) => {
   if (index !== -1) {
     issues[index] = { ...issues[index], ...updatedFields, updatedAt: new Date().toISOString() };
     setLocalCollection(STORAGE_KEYS.ISSUES, issues);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('mock_issues_updated'));
+    }
     return issues[index];
   }
   return null;
@@ -283,6 +289,9 @@ export const deleteIssueFromDB = (issueId) => {
   const issues = getIssues();
   const filtered = issues.filter(i => i.id !== issueId);
   setLocalCollection(STORAGE_KEYS.ISSUES, filtered);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('mock_issues_updated'));
+  }
 };
 
 export const getComments = (issueId) => {
@@ -296,6 +305,9 @@ export const saveComment = (issueId, comment) => {
   if (!allComments[issueId]) allComments[issueId] = [];
   allComments[issueId].push(comment);
   localStorage.setItem(STORAGE_KEYS.COMMENTS, JSON.stringify(allComments));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('mock_comments_updated', { detail: { issueId } }));
+  }
   return comment;
 };
 

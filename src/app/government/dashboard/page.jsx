@@ -54,21 +54,15 @@ export default function GovernmentDashboard() {
     }
   }, [user, router]);
 
-  // Load issues
-  const loadIssues = async () => {
-    try {
-      const data = await issueService.getAllIssues();
+  // Live real-time subscription for issues roster
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = issueService.subscribeToIssues((data) => {
       setIssues(data);
       setFilteredIssues(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
       setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadIssues();
+    });
+    return () => unsubscribe();
   }, []);
 
   // Load issue details

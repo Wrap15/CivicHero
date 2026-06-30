@@ -9,7 +9,8 @@ import {
   query, 
   where, 
   orderBy, 
-  addDoc 
+  addDoc,
+  onSnapshot
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { 
@@ -488,6 +489,62 @@ export const issueService = {
         }
       });
       return match;
+    }
+  },
+
+  // Live real-time observer for all issues (production + mock fallback)
+  subscribeToIssues: (callback) => {
+    if (isMockMode) {
+      const handleUpdate = () => {
+        callback(getIssues());
+      };
+      window.addEventListener('mock_issues_updated', handleUpdate);
+      // Trigger initial loading
+      callback(getIssues());
+      return () => {
+        window.removeEventListener('mock_issues_updated', handleUpdate);
+      };
+    } else {
+      const q = query(collection(db, 'issues'), orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const list = [];
+        querySnapshot.forEach((doc) => {
+          list.push({ id: doc.id, ...doc.data() });
+        });
+        callback(list);
+      });
+      return unsubscribe;
+    }
+  },
+
+  // Live real-time observer for comments of a specific issue
+  subscribeToComments: (issueId, callback) => {
+    if (isMockMode) {
+      const handleUpdate = (e) => {
+        if (e.detail && e.detail.issueId === issueId) {
+          callback(getComments(issueId));
+        }
+      };
+      window.addEventListener('mock_comments_updated', handleUpdate);
+      // Trigger initial loading
+      callback(getComments(issueId));
+      return () => {
+        window.removeEventListener('mock_comments_updated', handleUpdate);
+      };
+    } else {
+      const q = query(
+        collection(db, 'comments'),
+        where('issueId', '==', issueId),
+        orderBy('createdAt', 'asc')
+      );
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const list = [];
+        querySnapshot.forEach((doc) => {
+          list.push({ id: doc.id, ...doc.data() });
+        });
+        callback(list);
+      });
+      return unsubscribe;
     }
   }
 };

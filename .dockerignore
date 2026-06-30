@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+.env.local
+Dockerfile
+README.md
+task.md
+walkthrough.md
+implementation_plan.md
+product_refinements.md
+ui_ux_next_level_guide.md
+firebase_google_auth_setup.md
+npm-debug.log
+yarn-debug.log
+yarn-error.log

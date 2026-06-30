@@ -52,34 +52,32 @@ function AdminDashboardContent() {
     }
   }, [user, router]);
 
-  // Load Admin Data
-  const loadAdminData = async () => {
+  // Real-time Admin Data Observer
+  useEffect(() => {
+    if (!user) return;
+    
     setLoading(true);
     try {
-      // 1. Fetch Users
+      // 1. Fetch Users once
       const allUsers = getUsers();
       setUsersList(allUsers);
 
-      // 2. Fetch Audit Logs
+      // 2. Fetch Audit Logs once
       const logs = getAuditLogs();
       setAuditLogs(logs);
+    } catch (e) {
+      console.error(e);
+    }
 
-      // 3. Fetch Fraud Issues (Mock low confidence issues or flagged spam)
-      const allIssues = getIssues();
+    // 3. Subscribe to live issues feed for overview and fraud tabs
+    const unsubscribe = issueService.subscribeToIssues((allIssues) => {
+      setIssuesList(allIssues);
       const flagged = allIssues.filter(i => i.aiConfidence < 0.92 || i.severity === 'critical');
       setFraudIssues(flagged);
-
-      // 4. Fetch All Issues for general overview
-      setIssuesList(allIssues);
-    } catch (err) {
-      console.error(err);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
 
-  useEffect(() => {
-    loadAdminData();
+    return () => unsubscribe();
   }, [user]);
 
   // Handle Role change

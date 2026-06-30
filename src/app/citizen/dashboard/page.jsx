@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import Navbar from '@/components/shared/Navbar';
 import { useAuth } from '@/hooks/useAuth';
 import { issueService } from '@/services/issueService';
@@ -284,7 +285,7 @@ function CitizenDashboardContent() {
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Side: Search and Issues catalog (col 5) */}
-        <div className={`lg:col-span-5 flex flex-col space-y-4 ${selectedIssueId ? 'hidden lg:flex' : 'flex'}`}>
+        <div className="lg:col-span-5 flex flex-col space-y-4 flex">
           <div>
             <h2 className="text-lg font-bold text-white">Wards Complaint Feed</h2>
             <p className="text-zinc-500 text-xs mt-0.5">Filter by category or query issues with AI search.</p>
@@ -357,17 +358,34 @@ function CitizenDashboardContent() {
         </div>
 
         {/* Right Side: Detailed View, Voting, Comments (col 7) */}
-        <div className={`lg:col-span-7 ${selectedIssueId ? 'block' : 'hidden lg:block'}`}>
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setSelectedIssueId(null); }}
+          className={`
+            lg:col-span-7
+            ${selectedIssueId 
+              ? 'fixed inset-0 bg-black/70 z-40 backdrop-blur-xs flex items-end justify-center lg:relative lg:inset-auto lg:bg-transparent lg:z-0 lg:backdrop-blur-none lg:block' 
+              : 'hidden lg:block'
+            }
+          `}
+        >
           {selectedIssue ? (
-            <div className="glass-panel p-6 rounded-2xl border border-zinc-800 space-y-6 h-fit max-h-[800px] overflow-y-auto pr-2">
+            <div className="w-full max-h-[85vh] lg:max-h-[800px] bg-zinc-900 lg:bg-zinc-900/40 lg:backdrop-blur-md border-t border-zinc-800 lg:border border-zinc-850 rounded-t-3xl lg:rounded-2xl p-6 pb-24 lg:pb-6 space-y-6 overflow-y-auto pr-2">
               
-              {/* Mobile Back Button */}
-              <button
+              {/* Mobile Drag Indicator */}
+              <div 
                 onClick={() => setSelectedIssueId(null)}
-                className="lg:hidden flex items-center space-x-1.5 text-xs text-emerald-450 font-bold mb-2 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg hover:bg-zinc-850"
-              >
-                <span>← Back to Feed</span>
-              </button>
+                className="lg:hidden w-12 h-1.5 bg-zinc-800 rounded-full mx-auto cursor-pointer mb-2 shrink-0"
+              />
+
+              {/* Mobile Close Button */}
+              <div className="flex items-center justify-between lg:hidden mb-2">
+                <button
+                  onClick={() => setSelectedIssueId(null)}
+                  className="flex items-center space-x-1.5 text-xs text-emerald-450 font-bold bg-zinc-950 border border-zinc-850 px-3 py-1.5 rounded-lg hover:bg-zinc-800"
+                >
+                  <span>Close Details</span>
+                </button>
+              </div>
 
               {/* Detailed Header */}
               <div className="space-y-3">
@@ -623,6 +641,29 @@ function CitizenDashboardContent() {
         </div>
 
       </main>
+
+      {/* Mobile-Only Sticky Floating Bottom Bar */}
+      <div className="lg:hidden fixed bottom-4 left-4 right-4 z-40 bg-zinc-900/90 border border-zinc-800 backdrop-blur-md rounded-2xl p-2.5 flex items-center justify-around shadow-xl shadow-black/40">
+        <Link href="/citizen/dashboard" className="flex flex-col items-center space-y-1 text-emerald-455">
+          <MessageSquare className="w-5 h-5" />
+          <span className="text-[9px] font-bold">Feed</span>
+        </Link>
+        <Link href="/citizen/report" className="flex flex-col items-center space-y-1 text-zinc-400 hover:text-zinc-200">
+          <MapPin className="w-5 h-5" />
+          <span className="text-[9px] font-bold">Report</span>
+        </Link>
+        <Link href="/citizen/map" className="flex flex-col items-center space-y-1 text-zinc-400 hover:text-zinc-200">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L16 4m0 13V4m0 0L9 7" />
+          </svg>
+          <span className="text-[9px] font-bold">Map</span>
+        </Link>
+        <Link href="/citizen/leaderboard" className="flex flex-col items-center space-y-1 text-zinc-400 hover:text-zinc-200">
+          <Trophy className="w-5 h-5" />
+          <span className="text-[9px] font-bold">Ranks</span>
+        </Link>
+      </div>
+
     </div>
   );
 }
